@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Car Insurance USA - Calculator</title>
+  <meta name="description" content="Comprehensive Auto Insurance Premium Calculator. Get a detailed cost breakdown based on industry factors." />
+  <link rel="canonical" href="https://yourwebsite.com/calculator.html" />
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body { background-color: #ffffff; color: #333333; font-family: "Segoe UI", sans-serif; }
+    a { text-decoration: none; }
+    .navbar { background-color: #1976D2; }
+    .navbar-brand, .nav-link { color: #ffffff !important; }
+    .nav-link:hover { color: #BBDEFB !important; }
+    footer { background-color: #1976D2; color: #ffffff; padding: 20px 0; }
+    .calculator-card { max-width: 600px; margin: auto; }
+    #breakdownTable { margin-top: 20px; }
+    #breakdownTable table { width: 100%; border-collapse: collapse; }
+    #breakdownTable th, #breakdownTable td { padding: 10px; border: 1px solid #ddd; text-align: left; }
+    #breakdownTable th { background-color: #f0f0f0; color: #333; }
+    .chart-container { position: relative; margin: auto; height: 300px; width: 100%; }
+  </style>
+</head>
+<body>
+  <!-- Navigation Bar -->
+  <nav class="navbar navbar-expand-lg shadow-sm">
+    <div class="container">
+      <a class="navbar-brand" href="index.html">Car Insurance USA</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" 
+              aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon" style="filter: invert(1);"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ms-auto">
+          <li class="nav-item"><a class="nav-link" href="index.html">Home</a></li>
+          <li class="nav-item"><a class="nav-link" href="mustwatch.html">Must Watch</a></li>
+          <li class="nav-item"><a class="nav-link" href="calculator.html">Calculator</a></li>
+          <li class="nav-item"><a class="nav-link" href="topics.html">10 Things</a></li>
+          <li class="nav-item"><a class="nav-link" href="providers.html">Providers</a></li>
+          <li class="nav-item"><a class="nav-link" href="contact.html">Contact</a></li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+  
+  <!-- Calculator Section -->
+  <section id="calculator" class="py-10" style="background: #f5f5f5;">
+    <div class="container px-4">
+      <div class="calculator-card card shadow">
+        <div class="card-header text-center">
+          <h2 class="mb-0">Comprehensive Auto Insurance Premium Calculator</h2>
+          <p class="mb-0 small">Enter your details below to receive a detailed cost breakdown based on industry factors.</p>
+        </div>
+        <div class="card-body">
+          <form id="insuranceCalculator">
+            <div class="mb-3">
+              <label for="carValue" class="form-label">Car Value ($)</label>
+              <input type="number" class="form-control" id="carValue" placeholder="e.g., 20000" required>
+            </div>
+            <div class="mb-3">
+              <label for="driverAge" class="form-label">Driver Age</label>
+              <input type="number" class="form-control" id="driverAge" placeholder="e.g., 30" required>
+            </div>
+            <div class="mb-3">
+              <label for="accidents" class="form-label">Number of Accidents</label>
+              <input type="number" class="form-control" id="accidents" placeholder="e.g., 1" required>
+            </div>
+            <div class="mb-3">
+              <label for="annualMileage" class="form-label">Annual Mileage</label>
+              <input type="number" class="form-control" id="annualMileage" placeholder="e.g., 12000" required>
+            </div>
+            <div class="mb-3">
+              <label for="carAge" class="form-label">Car Age (years)</label>
+              <input type="number" class="form-control" id="carAge" placeholder="e.g., 6" required>
+            </div>
+            <div class="mb-3">
+              <label for="creditScore" class="form-label">Credit Score (300-850)</label>
+              <input type="number" class="form-control" id="creditScore" placeholder="e.g., 680" required>
+            </div>
+            <button type="submit" class="btn btn-primary w-100">Calculate My Premium</button>
+          </form>
+          <!-- Detailed Breakdown Table -->
+          <div id="breakdownTable"></div>
+          <!-- Doughnut Chart -->
+          <div class="chart-container mt-4">
+            <canvas id="premiumBreakdownChart"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+  
+  <!-- Footer -->
+  <footer class="text-center">
+    <div class="container">
+      <p>&copy; 2025 Car Insurance USA. All rights reserved.</p>
+    </div>
+  </footer>
+  
+  <!-- Bootstrap Bundle JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  
+  <!-- Calculator and Chart Script -->
+  <script>
+    let chartInstance;
+    function updateBreakdown(base, ageAdj, accident, mileage, carDiscount, subtotal, creditPerc, creditAmt, total) {
+      const breakdownHTML = `
+        <h4 class="mt-4 text-center">Premium Breakdown</h4>
+        <table class="table table-striped">
+          <thead>
+            <tr>
+              <th>Factor</th>
+              <th>Cost ($)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Base Premium</td>
+              <td>${base.toFixed(2)}</td>
+            </tr>
+            <tr>
+              <td>Car Age Discount</td>
+              <td>-${carDiscount.toFixed(2)}</td>
+            </tr>
+            <tr>
+              <td>Age Adjustment</td>
+              <td>${ageAdj.toFixed(2)}</td>
+            </tr>
+            <tr>
+              <td>Accident Surcharge</td>
+              <td>${accident.toFixed(2)}</td>
+            </tr>
+            <tr>
+              <td>Mileage Surcharge</td>
+              <td>${mileage.toFixed(2)}</td>
+            </tr>
+            <tr>
+              <td>Subtotal</td>
+              <td>${subtotal.toFixed(2)}</td>
+            </tr>
+            <tr>
+              <td>Credit Adjustment (${(creditPerc*100).toFixed(0)}%)</td>
+              <td>${creditAmt >= 0 ? '+' : '-'}${Math.abs(creditAmt).toFixed(2)}</td>
+            </tr>
+            <tr>
+              <th>Total Premium</th>
+              <th>${total.toFixed(2)}</th>
+            </tr>
+          </tbody>
+        </table>
+      `;
+      document.getElementById('breakdownTable').innerHTML = breakdownHTML;
+    }
+    
+    function renderChart(netBase, ageAdj, accident, mileage, creditAdj) {
+      const ctx = document.getElementById('premiumBreakdownChart').getContext('2d');
+      const creditLabel = creditAdj < 0 ? "Credit Discount" : "Credit Adjustment";
+      const creditValue = Math.abs(creditAdj);
+      const data = {
+        labels: ["Net Base", "Age Adjustment", "Accident Surcharge", "Mileage Surcharge", creditLabel],
+        datasets: [{
+          data: [netBase, ageAdj, accident, mileage, creditValue],
+          backgroundColor: ["#1976D2", "#64B5F6", "#FF9800", "#8BC34A", "#E91E63"],
+          hoverBackgroundColor: ["#1565C0", "#42A5F5", "#FB8C00", "#7CB342", "#D81B60"],
+          borderWidth: 1,
+          borderColor: "#fff"
+        }]
+      };
+      if (chartInstance) { chartInstance.destroy(); }
+      chartInstance = new Chart(ctx, {
+        type: 'doughnut',
+        data: data,
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          cutout: '50%',
+          plugins: {
+            legend: {
+              position: 'bottom',
+              labels: { boxWidth: 20, font: { size: 14 } }
+            },
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  const label = context.label || '';
+                  const value = context.parsed;
+                  return label + ': $' + value.toFixed(2);
+                }
+              }
+            },
+            title: {
+              display: true,
+              text: 'Premium Cost Distribution'
+            }
+          },
+          animation: {
+            animateRotate: true,
+            animateScale: true,
+            easing: 'easeOutQuart'
+          }
+        }
+      });
+    }
+    
+    document.getElementById('insuranceCalculator').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const carValue = parseFloat(document.getElementById('carValue').value);
+      const driverAge = parseFloat(document.getElementById('driverAge').value);
+      const accidents = parseFloat(document.getElementById('accidents').value);
+      const annualMileage = parseFloat(document.getElementById('annualMileage').value);
+      const carAge = parseFloat(document.getElementById('carAge').value);
+      const creditScore = parseFloat(document.getElementById('creditScore').value);
+      
+      // Base Premium: 0.5% of car value
+      const basePremium = carValue * 0.005;
+      
+      // Car Age Discount
+      let carAgeDiscountRate = 0;
+      if (carAge > 10) { carAgeDiscountRate = 0.20; }
+      else if (carAge >= 5) { carAgeDiscountRate = 0.10; }
+      const carAgeDiscount = basePremium * carAgeDiscountRate;
+      
+      // Age Adjustment
+      let ageAdjustment = 0;
+      if (driverAge < 25) { ageAdjustment = 200; }
+      else if (driverAge > 65) { ageAdjustment = 100; }
+      
+      // Accident Surcharge
+      const accidentSurcharge = accidents * 50;
+      
+      // Mileage Surcharge
+      const mileageSurcharge = annualMileage * 0.02;
+      
+      // Subtotal before credit adjustment
+      const subtotal = (basePremium - carAgeDiscount) + ageAdjustment + accidentSurcharge + mileageSurcharge;
+      
+      // Credit Adjustment based on credit score thresholds
+      let creditAdjustmentPercent = 0;
+      if (creditScore < 600) { creditAdjustmentPercent = 0.25; }
+      else if (creditScore < 700) { creditAdjustmentPercent = 0.10; }
+      else if (creditScore < 750) { creditAdjustmentPercent = 0; }
+      else { creditAdjustmentPercent = -0.05; }
+      const creditAdjustmentAmount = subtotal * creditAdjustmentPercent;
+      
+      // Final Total Premium
+      const totalPremium = subtotal + creditAdjustmentAmount;
+      const netBase = basePremium - carAgeDiscount;
+      
+      updateBreakdown(basePremium, ageAdjustment, accidentSurcharge, mileageSurcharge, carAgeDiscount, subtotal, creditAdjustmentPercent, creditAdjustmentAmount, totalPremium);
+      renderChart(netBase, ageAdjustment, accidentSurcharge, mileageSurcharge, creditAdjustmentAmount);
+    });
+  </script>
+</body>
+</html>
